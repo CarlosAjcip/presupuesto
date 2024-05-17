@@ -1,0 +1,71 @@
+﻿@model IEnumerable<TiposCuentas>
+@{
+    ViewData["Title"] = "Tipos Cuentas";
+}
+<h1>Tipos de Cuentas</h1>
+<h5>El tipo de cuenta se refiere a como podemos agrupar acuentas. Ejemplos: Prestamos, Tarjeta de Credito, etc.</h5>
+
+<a asp-action="Crear" class="btn btn-primary mb-3">Crear nuevo</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Acciones</th>
+            <th>Nombre</th>
+        </tr>
+    </thead>
+    <tbody id="reordenable">
+        @foreach (var TiposCuentas in Model)
+        {
+            <tr>
+                <td>
+                    <input type="hidden" value="@TiposCuentas.id_tiposCuen" class="ids" />
+                    <a class="btn btn-primary" asp-action="Editar" asp-route-id="@TiposCuentas.id_tiposCuen">Editar</a>
+                    <a class="btn btn-danger" asp-action="Borrar" asp-route-id="@TiposCuentas.id_tiposCuen">Borrar</a>
+                </td>
+                <td>
+                    @TiposCuentas.Nombre
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts{
+    <script>
+        const urlOrdenar = '@Url.Action("Ordenar")';
+
+        $(function () {
+            $("#reordenable").sortable({
+                stop: async function(e,ui){
+                    await actualizarOrdenes();
+                }
+            });
+
+            async function actualizarOrdenes(){
+                const ids = obtenerIdsElementos();
+                await enviarIdsAlBackend(ids);
+            }
+
+            function obtenerIdsElementos() {
+                const ids = $(".ids").map(function () {
+                    return $(this).val();
+                }).get();
+
+                return ids;
+            }
+
+            async function enviarIdsAlBackend(ids) {
+                var data = JSON.stringify(ids);
+
+                await fetch(urlOrdenar, {
+                    method: 'POST',
+                    body: data,
+                    headers: {
+                        'Content-Type': 'application/json' // <-- forma correcta
+                    }
+                });
+            }
+        })
+    </script>
+}
